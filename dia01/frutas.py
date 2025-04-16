@@ -39,3 +39,18 @@ tree.plot_tree(arvore,
                filled=True)
 
 plt.show()
+
+#%%
+
+# ['Arredondada', 'Suculenta', 'Vermelha', 'Doce']
+
+# retorna apenas o nome de UMA fruta (por empate retorna o de ordem alfabética)
+arvore.predict([[0,1,1,1]])
+
+#%%
+
+# retorna uma lista com a probabilidade de cada fruta
+probas = arvore.predict_proba([[1,1,1,1]])[0]
+pd.Series(probas, index=arvore.classes_)
+
+#%%
