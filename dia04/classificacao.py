@@ -15,7 +15,7 @@ target = 'Aprovado'
 
 #%%
 
-# REGRESSÃO
+# REGRESSÃO LOGÍSTICA
 
 from sklearn import linear_model
 
@@ -51,7 +51,7 @@ reg_conf
 
 #%%
 
-# REGRESSÃO
+# ÁRVORE DE DECISÃO
 
 from sklearn import tree
 
@@ -109,3 +109,72 @@ nb_conf = pd.DataFrame(nb_conf,
 nb_conf
 
 #%% 
+
+# No sklearn, o ponto de corte (threshold) padrão é na metade (0.5)
+
+nb_proba = nb.predict_proba(df[features])[:,1]
+threshold = 0.5
+nb_predict = nb_proba > threshold
+
+print(f'Ponte de corte igual a {threshold}:')
+print('-' * 40)
+
+nb_acc = metrics.accuracy_score(df[target], nb_predict)
+print(f'Acurácia Naive Bayes: {nb_acc}')
+
+nb_precision = metrics.precision_score(df[target], nb_predict)
+print(f'Precisão Naive Bayes: {nb_precision}')
+
+nb_recall = metrics.recall_score(df[target], nb_predict)
+print(f'Recall Naive Bayes: {nb_recall}')
+
+threshold = 0.8
+nb_predict = nb_proba > threshold
+
+print(f'\nPonte de corte igual a {threshold}:')
+print('-' * 40)
+
+nb_acc = metrics.accuracy_score(df[target], nb_predict)
+print(f'Acurácia Naive Bayes: {nb_acc}')
+
+nb_precision = metrics.precision_score(df[target], nb_predict)
+print(f'Precisão Naive Bayes: {nb_precision}')
+
+nb_recall = metrics.recall_score(df[target], nb_predict)
+print(f'Recall Naive Bayes: {nb_recall}')
+
+# Conclusão 1: depende do ponto de corte para eu escolher o melhor modelo.
+# Conclusão 2: quem define o valor da probabilidade no ponto de corte é onde você entrega mais dinheiro para o negócio.
+
+#%%
+
+df['prob_nb'] = nb_proba
+df
+
+#%%
+
+# Plotando a curva ROC
+
+import matplotlib.pyplot as plt
+
+fpr, tpr, thresholds = metrics.roc_curve(df[target], nb_proba)
+
+plt.figure(dpi=150)
+plt.title('Curva ROC: TPR vs FPR')
+plt.plot(fpr, tpr)
+plt.grid(True)
+plt.plot([0,1], [0,1], '--')
+plt.ylabel('Taxa de Verdadeiros Positivos (TPR / Recall / Sensibilidade)', size=9)
+plt.xlabel('Taxa de Falsos Positivos (FPR / 1 - especificidade)', size=9)
+
+# cálculo da área abaixo da curva (Area Under Curve)
+modelo_precisao = round(metrics.roc_auc_score(df[target], nb_proba), 3)
+plt.text(0.862, 0.065, 
+         s=f'Precisão do modelo:\n{modelo_precisao}%', 
+         backgroundcolor= '0.85', 
+         horizontalalignment='center', 
+         fontsize=8)
+plt.show()
+
+#%%
+
