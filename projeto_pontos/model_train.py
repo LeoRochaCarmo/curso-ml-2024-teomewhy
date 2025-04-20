@@ -13,6 +13,8 @@ from sklearn import naive_bayes
 
 from feature_engine import imputation 
 
+import scikitplot as skplt
+
 #%%
 
 df = pd.read_csv('../data/dados_pontos.csv', sep=';')
@@ -125,10 +127,11 @@ meu_pipeline = pipeline.Pipeline([
 
 meu_pipeline.fit(X_train, y_train)
 
+#%% 
 y_train_predict = meu_pipeline.predict(X_train)
 y_train_proba = meu_pipeline.predict_proba(X_train)[:,1]
 y_test_predict = meu_pipeline.predict(X_test)
-y_test_proba = meu_pipeline.predict_proba(X_test)[:,1]
+y_test_proba = meu_pipeline.predict_proba(X_test)
 
 acc_train = metrics.accuracy_score(y_train, y_train_predict)
 acc_test = metrics.accuracy_score(y_test, y_test_predict)
@@ -136,8 +139,47 @@ print('Acurácia base train', acc_train)
 print('Acurácia base test', acc_test)
 
 auc_train = metrics.roc_auc_score(y_train, y_train_proba)
-auc_test = metrics.roc_auc_score(y_test, y_test_proba)
+auc_test = metrics.roc_auc_score(y_test, y_test_proba[:,1])
 print('\nAUC base train', auc_train)
 print('AUC base test', auc_test)
 
 # %%
+
+# Vendo a melhor combinação de hiperparâmetros
+grid.best_params_
+
+#%%
+
+# Retorno do modelo completo já treinado com os melhores hiperparâmetros
+grid.best_estimator_
+
+#%%
+
+# Vendo a importância de cada variável para o modelo
+f_importance = meu_pipeline[-1].best_estimator_.feature_importances_
+
+(pd.DataFrame(f_importance, index=features)
+    .rename(columns={0: 'f_importance'})
+    .sort_values('f_importance', ascending=False))
+
+#%%
+
+# Plotando a ROC Curve com scikitplot
+
+import matplotlib.pyplot as plt
+
+plt.figure(dpi=150)
+skplt.metrics.plot_roc(y_test, y_test_proba)
+plt.show()
+
+#%%
+
+# Plotando o ganho acumulado com scikitplot
+
+import matplotlib.pyplot as plt
+
+plt.figure(dpi=150)
+skplt.metrics.plot_cumulative_gain(y_test, y_test_proba)
+plt.show()
+
+#%%
